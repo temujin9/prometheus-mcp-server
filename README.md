@@ -13,20 +13,32 @@ This provides access to your Prometheus metrics and queries through standardized
 ## Features
 
 - [x] Execute PromQL queries against Prometheus
+  - [x] **NEW**: Pagination support with `limit` and `offset` parameters
+  - [x] **NEW**: Compact response format to reduce token usage
 - [x] Discover and explore metrics
-  - [x] List available metrics
+  - [x] List available metrics with **filtering and pagination**
+  - [x] **NEW**: Filter metrics by prefix or regex pattern
   - [x] Get metadata for specific metrics
   - [x] View instant query results
   - [x] View range query results with different step intervals
+- [x] **NEW**: Enhanced scrape targets with pagination
 - [x] Authentication support
   - [x] Basic auth from environment variables
   - [x] Bearer token auth from environment variables
 - [x] Docker containerization support
-
 - [x] Provide interactive tools for AI assistants
 
 The list of tools is configurable, so you can choose which tools you want to make available to the MCP client.
 This is useful if you don't use certain functionality or if you don't want to take up too much of the context window.
+
+### New Pagination & Filtering Features
+
+All tools now support optional pagination and filtering to handle large datasets efficiently:
+
+- **Pagination**: Use `limit` and `offset` parameters to control result size
+- **Filtering**: Filter metrics by `prefix` or `filter_pattern` (regex)
+- **Compact Mode**: Use `compact=true` to get smaller responses optimized for AI processing
+- **Response Metadata**: Pagination responses include metadata about total count, offset, and whether more results are available
 
 ## Usage
 
@@ -140,13 +152,50 @@ When adding new features, please also add corresponding tests.
 
 ### Tools
 
-| Tool | Category | Description |
-| --- | --- | --- |
-| `execute_query` | Query | Execute a PromQL instant query against Prometheus |
-| `execute_range_query` | Query | Execute a PromQL range query with start time, end time, and step interval |
-| `list_metrics` | Discovery | List all available metrics in Prometheus |
-| `get_metric_metadata` | Discovery | Get metadata for a specific metric |
-| `get_targets` | Discovery | Get information about all scrape targets |
+| Tool | Category | Description | Enhanced Parameters |
+| --- | --- | --- | --- |
+| `execute_query` | Query | Execute a PromQL instant query against Prometheus | `limit`, `offset`, `compact` |
+| `execute_range_query` | Query | Execute a PromQL range query with start time, end time, and step interval | _(unchanged)_ |
+| `list_metrics` | Discovery | List available metrics with filtering and pagination | `limit`, `offset`, `filter_pattern`, `prefix` |
+| `get_metric_metadata` | Discovery | Get metadata for a specific metric | _(unchanged)_ |
+| `get_targets` | Discovery | Get information about scrape targets with pagination | `limit`, `offset`, `active_only` |
+
+#### Enhanced Tool Examples
+
+**Query with pagination and compact mode:**
+```javascript
+await execute_query({
+  query: "up", 
+  limit: 10, 
+  offset: 0, 
+  compact: true
+})
+```
+
+**Filter metrics by prefix:**
+```javascript
+await list_metrics({
+  prefix: "storage_", 
+  limit: 20
+})
+```
+
+**Filter metrics by regex pattern:**
+```javascript
+await list_metrics({
+  filter_pattern: ".*_total$", 
+  limit: 50
+})
+```
+
+**Get paginated targets:**
+```javascript
+await get_targets({
+  limit: 25, 
+  offset: 0, 
+  active_only: true
+})
+```
 
 ## License
 
