@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
 import dotenv
-from prometheus_mcp_server.server import mcp, config
-from prometheus_mcp_server.logging_config import setup_logging, get_logger
+from prometheus_mcp_server.server import mcp, config, TransportType
+from prometheus_mcp_server.logging_config import setup_logging
 
 # Initialize structured logging
 logger = setup_logging()
@@ -45,10 +45,24 @@ def run_server():
         logger.error("Environment setup failed, exiting")
         sys.exit(1)
     
-    logger.info("Starting Prometheus MCP Server", transport="stdio")
-    
-    # Run the server with the stdio transport
-    mcp.run(transport="stdio")
+    mcp_server_config = config.mcp_server_config
+    transport = mcp_server_config.mcp_server_transport
+
+    # For HTTP and SSE transports, we need to specify host and port
+    http_transports = [TransportType.HTTP.value, TransportType.SSE.value]
+
+    if transport in http_transports:
+        # Use the configured bind host (defaults to 127.0.0.1, can be set to 0.0.0.0)
+        # and bind port (defaults to 8000)
+        mcp.run(transport=transport, host=mcp_server_config.mcp_bind_host, port=mcp_server_config.mcp_bind_port)
+        logger.info("Starting Prometheus MCP Server", 
+                transport=transport, 
+                host=mcp_server_config.mcp_bind_host,
+                port=mcp_server_config.mcp_bind_port)
+    else:
+        # For stdio transport, no host or port is needed
+        mcp.run(transport=transport)
+        logger.info("Starting Prometheus MCP Server", transport=transport)
 
 if __name__ == "__main__":
     run_server()

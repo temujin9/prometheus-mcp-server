@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 import time
 from datetime import datetime, timedelta
+from enum import Enum
 
 import dotenv
 import requests
@@ -18,6 +19,33 @@ mcp = FastMCP("Prometheus MCP")
 # Get logger instance
 logger = get_logger()
 
+class TransportType(str, Enum):
+    """Supported MCP server transport types."""
+
+    STDIO = "stdio"
+    HTTP = "http"
+    SSE = "sse"
+
+    @classmethod
+    def values(cls) -> list[str]:
+        """Get all valid transport values."""
+        return [transport.value for transport in cls]
+
+class MCPServerConfig:
+    """Global Configuration for MCP."""
+    mcp_server_transport: TransportType
+    mcp_bind_host: str = "127.0.0.1"
+    mcp_bind_port: int = 8000
+
+    def __post_init__(self):
+        """Validate mcp configuration."""
+        if not self.mcp_server_transport:
+            raise ValueError("MCP SERVER TRANSPORT is required")
+        if not self.mcp_bind_host:
+            raise ValueError(f"MCP BIND HOST is required")
+        if not self.mcp_bind_port:
+            raise ValueError(f"MCP BIND PORT is required")
+
 @dataclass
 class PrometheusConfig:
     url: str
@@ -27,6 +55,7 @@ class PrometheusConfig:
     token: Optional[str] = None
     # Optional Org ID for multi-tenant setups
     org_id: Optional[str] = None
+    mcp_server_config: MCPServerConfig
 
 config = PrometheusConfig(
     url=os.environ.get("PROMETHEUS_URL", ""),
@@ -34,6 +63,11 @@ config = PrometheusConfig(
     password=os.environ.get("PROMETHEUS_PASSWORD", ""),
     token=os.environ.get("PROMETHEUS_TOKEN", ""),
     org_id=os.environ.get("ORG_ID", ""),
+    mcp_server_config=MCPServerConfig(
+        mcp_server_transport=os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT"),
+        mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST"),
+        mcp_bind_port=os.environ.get("PROMETHEUS_MCP_BIND_PORT")
+    )
 )
 
 def get_prometheus_auth():
