@@ -45,8 +45,8 @@ def run_server():
         logger.error("Environment setup failed, exiting")
         sys.exit(1)
     
-    mcp_server_config = config.mcp_server_config
-    transport = mcp_server_config.mcp_server_transport
+    mcp_config = config.mcp_config
+    transport = mcp_config.mcp_server_transport
 
     # For HTTP and SSE transports, we need to specify host and port
     http_transports = [TransportType.HTTP.value, TransportType.SSE.value]
@@ -54,11 +54,11 @@ def run_server():
     if transport in http_transports:
         # Use the configured bind host (defaults to 127.0.0.1, can be set to 0.0.0.0)
         # and bind port (defaults to 8000)
-        mcp.run(transport=transport, host=mcp_server_config.mcp_bind_host, port=mcp_server_config.mcp_bind_port)
+        mcp.run(transport=transport, host=mcp_config.mcp_bind_host, port=mcp_config.mcp_bind_port)
         logger.info("Starting Prometheus MCP Server", 
                 transport=transport, 
-                host=mcp_server_config.mcp_bind_host,
-                port=mcp_server_config.mcp_bind_port)
+                host=mcp_config.mcp_bind_host,
+                port=mcp_config.mcp_bind_port)
     else:
         # For stdio transport, no host or port is needed
         mcp.run(transport=transport)
