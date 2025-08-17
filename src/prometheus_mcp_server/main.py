@@ -45,7 +45,7 @@ def run_server():
         logger.error("Environment setup failed, exiting")
         sys.exit(1)
     
-    mcp_config = config.mcp_config
+    mcp_config = config.mcp_server_config
     transport = mcp_config.mcp_server_transport
 
     # For HTTP and SSE transports, we need to specify host and port
