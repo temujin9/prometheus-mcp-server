@@ -48,6 +48,13 @@ PROMETHEUS_PASSWORD=your_password
 # For bearer token auth
 PROMETHEUS_TOKEN=your_token
 
+# Optional: Custom MCP configuration
+PROMETHEUS_MCP_SERVER_TRANSPORT=http/stdio/sse # if undefined, stdio is used
+
+# Optional: Only relevant for non-stdio transports
+PROMETHEUS_MCP_BIND_HOST=localhost # if undefined, 127.0.0.1 is used
+PROMETHEUS_MCP_BIND_PORT=8080 # if undefined, 8080 is used
+
 # Optional: For multi-tenant setups like Cortex, Mimir or Thanos
 ORG_ID=your_organization_id
 ```
@@ -68,7 +75,10 @@ ORG_ID=your_organization_id
         "ghcr.io/pab1it0/prometheus-mcp-server:latest"
       ],
       "env": {
-        "PROMETHEUS_URL": "<url>"
+        "PROMETHEUS_URL": "<url>",
+        "PROMETHEUS_MCP_SERVER_TRANSPORT ": "http",
+        "PROMETHEUS_MCP_BIND_HOST": "localhost",
+        "PROMETHEUS_MCP_BIND_PORT": "8080"
       }
     }
   }

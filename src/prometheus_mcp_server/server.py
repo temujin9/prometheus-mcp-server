@@ -33,7 +33,7 @@ class TransportType(str, Enum):
 
 class MCPServerConfig:
     """Global Configuration for MCP."""
-    mcp_server_transport: TransportType
+    mcp_server_transport: TransportType = TransportType.STDIO
     mcp_bind_host: str = "127.0.0.1"
     mcp_bind_port: int = 8000
 
@@ -64,9 +64,9 @@ config = PrometheusConfig(
     token=os.environ.get("PROMETHEUS_TOKEN", ""),
     org_id=os.environ.get("ORG_ID", ""),
     mcp_server_config=MCPServerConfig(
-        mcp_server_transport=os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT"),
-        mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST"),
-        mcp_bind_port=os.environ.get("PROMETHEUS_MCP_BIND_PORT")
+        mcp_server_transport=os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT", ""),
+        mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST", ""),
+        mcp_bind_port=os.environ.get("PROMETHEUS_MCP_BIND_PORT", "")
     )
 )
 
