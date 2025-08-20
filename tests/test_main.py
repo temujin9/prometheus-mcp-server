@@ -20,6 +20,9 @@ def test_setup_environment_success(mock_config):
 
     # Verify
     assert result is True
+    assert mock_config.mcp_server_config.mcp_server_transport is "stdio"
+    assert mock_config.mcp_server_config.mcp_bind_host is "127.0.0.1"
+    assert mock_config.mcp_server_config.mcp_bind_port is 8080
 
 @patch("prometheus_mcp_server.main.config")
 def test_setup_environment_missing_url(mock_config):
@@ -36,6 +39,9 @@ def test_setup_environment_missing_url(mock_config):
 
     # Verify
     assert result is False
+    assert mock_config.mcp_server_config.mcp_server_transport is "stdio"
+    assert mock_config.mcp_server_config.mcp_bind_host is "127.0.0.1"
+    assert mock_config.mcp_server_config.mcp_bind_port is 8080
 
 @patch("prometheus_mcp_server.main.config")
 def test_setup_environment_with_auth(mock_config):
@@ -52,6 +58,9 @@ def test_setup_environment_with_auth(mock_config):
 
     # Verify
     assert result is True
+    assert mock_config.mcp_server_config.mcp_server_transport is "stdio"
+    assert mock_config.mcp_server_config.mcp_bind_host is "127.0.0.1"
+    assert mock_config.mcp_server_config.mcp_bind_port is 8080
 
 @patch("prometheus_mcp_server.main.config")
 def test_setup_environment_with_custom_mcp_config(mock_config):
@@ -64,7 +73,7 @@ def test_setup_environment_with_custom_mcp_config(mock_config):
     mock_config.mcp_server_config = {
         "mcp_server_transport": "http",
         "mcp_bind_host": "localhost",
-        "mcp_bind_port": "8080"
+        "mcp_bind_port": "5000"
     }
 
     # Execute
@@ -72,6 +81,32 @@ def test_setup_environment_with_custom_mcp_config(mock_config):
 
     # Verify
     assert result is True
+    assert mock_config.mcp_server_config.mcp_server_transport is "http"
+    assert mock_config.mcp_server_config.mcp_bind_host is "localhost"
+    assert mock_config.mcp_server_config.mcp_bind_port is 5000
+
+@patch("prometheus_mcp_server.main.config")
+def test_setup_environment_with_custom_mcp_config_caps(mock_config):
+    """Test environment setup with custom mcp config."""
+    # Setup
+    mock_config.url = "http://test:9090"
+    mock_config.username = "user"
+    mock_config.password = "pass"
+    mock_config.token = None
+    mock_config.mcp_server_config = {
+        "mcp_server_transport": "HTTP",
+        "mcp_bind_host": "localhost",
+        "mcp_bind_port": "5000"
+    }
+
+    # Execute
+    result = setup_environment()
+
+    # Verify
+    assert result is True
+    assert mock_config.mcp_server_config.mcp_server_transport is "http"
+    assert mock_config.mcp_server_config.mcp_bind_host is "localhost"
+    assert mock_config.mcp_server_config.mcp_bind_port is 5000
 
 @patch("prometheus_mcp_server.main.config")
 def test_setup_environment_with_partial_mcp_config_1(mock_config):
@@ -90,6 +125,9 @@ def test_setup_environment_with_partial_mcp_config_1(mock_config):
 
     # Verify
     assert result is True
+    assert mock_config.mcp_server_config.mcp_server_transport is "http"
+    assert mock_config.mcp_server_config.mcp_bind_host is "127.0.0.1"
+    assert mock_config.mcp_server_config.mcp_bind_port is 8080
 
 @patch("prometheus_mcp_server.main.config")
 def test_setup_environment_with_partial_mcp_config_2(mock_config):
@@ -101,7 +139,7 @@ def test_setup_environment_with_partial_mcp_config_2(mock_config):
     mock_config.token = None
     mock_config.mcp_server_config = {
         "mcp_bind_host": "localhost",
-        "mcp_bind_port": "8080"
+        "mcp_bind_port": "5000"
     }
 
     # Execute
@@ -109,6 +147,9 @@ def test_setup_environment_with_partial_mcp_config_2(mock_config):
 
     # Verify
     assert result is True
+    assert mock_config.mcp_server_config.mcp_server_transport is "stdio"
+    assert mock_config.mcp_server_config.mcp_bind_host is "localhost"
+    assert mock_config.mcp_server_config.mcp_bind_port is 5000
 
 @patch("prometheus_mcp_server.main.config")
 def test_setup_environment_with_bad_mcp_config_transport(mock_config):
