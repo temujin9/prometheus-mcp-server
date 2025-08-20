@@ -35,12 +35,14 @@ class MCPServerConfig:
     """Global Configuration for MCP."""
     mcp_server_transport: TransportType = TransportType.STDIO
     mcp_bind_host: str = "127.0.0.1"
-    mcp_bind_port: int = 8000
+    mcp_bind_port: int = 8080
 
     def __post_init__(self):
         """Validate mcp configuration."""
         if not self.mcp_server_transport:
             raise ValueError("MCP SERVER TRANSPORT is required")
+        if self.mcp_server_transport not in TransportType:
+            raise ValueError("Invalid value for MCP SERVER TRANSPORT, please choose one of these acceptable inputs (stdio, http, sse).")
         if not self.mcp_bind_host:
             raise ValueError(f"MCP BIND HOST is required")
         if not self.mcp_bind_port:

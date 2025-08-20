@@ -31,10 +31,9 @@ ENV PATH="/app/.venv/bin:$PATH" \
   PYTHONPATH="/app" \
   PYTHONFAULTHANDLER=1
 
-
 USER app
 
-EXPOSE 8000
+EXPOSE 8080
 
 
 CMD ["/app/.venv/bin/prometheus-mcp-server"]

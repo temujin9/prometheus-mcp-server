@@ -49,7 +49,7 @@ PROMETHEUS_PASSWORD=your_password
 PROMETHEUS_TOKEN=your_token
 
 # Optional: Custom MCP configuration
-PROMETHEUS_MCP_SERVER_TRANSPORT=http/stdio/sse # if undefined, stdio is used
+PROMETHEUS_MCP_SERVER_TRANSPORT=stdio # Choose between http/stdio/sse, if undefined, stdio is used
 
 # Optional: Only relevant for non-stdio transports
 PROMETHEUS_MCP_BIND_HOST=localhost # if undefined, 127.0.0.1 is used
