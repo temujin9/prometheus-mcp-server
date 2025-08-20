@@ -53,6 +53,105 @@ def test_setup_environment_with_auth(mock_config):
     # Verify
     assert result is True
 
+@patch("prometheus_mcp_server.main.config")
+def test_setup_environment_with_custom_mcp_config(mock_config):
+    """Test environment setup with custom mcp config."""
+    # Setup
+    mock_config.url = "http://test:9090"
+    mock_config.username = "user"
+    mock_config.password = "pass"
+    mock_config.token = None
+    mock_config.mcp_server_config = {
+        "mcp_server_transport": "http",
+        "mcp_bind_host": "localhost",
+        "mcp_bind_port": "8080"
+    }
+
+    # Execute
+    result = setup_environment()
+
+    # Verify
+    assert result is True
+
+@patch("prometheus_mcp_server.main.config")
+def test_setup_environment_with_partial_mcp_config_1(mock_config):
+    """Test environment setup with custom mcp config."""
+    # Setup
+    mock_config.url = "http://test:9090"
+    mock_config.username = "user"
+    mock_config.password = "pass"
+    mock_config.token = None
+    mock_config.mcp_server_config = {
+        "mcp_server_transport": "http"
+    }
+
+    # Execute
+    result = setup_environment()
+
+    # Verify
+    assert result is True
+
+@patch("prometheus_mcp_server.main.config")
+def test_setup_environment_with_partial_mcp_config_2(mock_config):
+    """Test environment setup with custom mcp config."""
+    # Setup
+    mock_config.url = "http://test:9090"
+    mock_config.username = "user"
+    mock_config.password = "pass"
+    mock_config.token = None
+    mock_config.mcp_server_config = {
+        "mcp_bind_host": "localhost",
+        "mcp_bind_port": "8080"
+    }
+
+    # Execute
+    result = setup_environment()
+
+    # Verify
+    assert result is True
+
+@patch("prometheus_mcp_server.main.config")
+def test_setup_environment_with_bad_mcp_config_transport(mock_config):
+    """Test environment setup with bad transport in mcp config."""
+    # Setup
+    mock_config.url = "http://test:9090"
+    mock_config.username = "user"
+    mock_config.password = "pass"
+    mock_config.token = None
+    mock_config.org_id = None
+    mock_config.mcp_server_config = {
+        "mcp_server_transport": "wrong_transport",
+        "mcp_bind_host": "localhost",
+        "mcp_bind_port": "8080"
+    }
+
+    # Execute
+    result = setup_environment()
+
+    # Verify
+    assert result is False
+
+@patch("prometheus_mcp_server.main.config")
+def test_setup_environment_with_bad_mcp_config_port(mock_config):
+    """Test environment setup with bad port in mcp config."""
+    # Setup
+    mock_config.url = "http://test:9090"
+    mock_config.username = "user"
+    mock_config.password = "pass"
+    mock_config.token = None
+    mock_config.org_id = None
+    mock_config.mcp_server_config = {
+        "mcp_server_transport": "http",
+        "mcp_bind_host": "localhost",
+        "mcp_bind_port": "some_string"
+    }
+
+    # Execute
+    result = setup_environment()
+
+    # Verify
+    assert result is False
+
 @patch("prometheus_mcp_server.main.setup_environment")
 @patch("prometheus_mcp_server.main.mcp.run")
 @patch("prometheus_mcp_server.main.sys.exit")

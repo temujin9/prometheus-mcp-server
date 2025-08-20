@@ -41,8 +41,6 @@ class MCPServerConfig:
         """Validate mcp configuration."""
         if not self.mcp_server_transport:
             raise ValueError("MCP SERVER TRANSPORT is required")
-        if self.mcp_server_transport not in TransportType:
-            raise ValueError("Invalid value for MCP SERVER TRANSPORT, please choose one of these acceptable inputs (stdio, http, sse).")
         if not self.mcp_bind_host:
             raise ValueError(f"MCP BIND HOST is required")
         if not self.mcp_bind_port:
@@ -66,7 +64,7 @@ config = PrometheusConfig(
     token=os.environ.get("PROMETHEUS_TOKEN", ""),
     org_id=os.environ.get("ORG_ID", ""),
     mcp_server_config=MCPServerConfig(
-        mcp_server_transport=os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT", ""),
+        mcp_server_transport=(os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT", "")).lower(),
         mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST", ""),
         mcp_bind_port=int(os.environ.get("PROMETHEUS_MCP_BIND_PORT", ""))
     )

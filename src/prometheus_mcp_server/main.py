@@ -22,6 +22,27 @@ def setup_environment():
         )
         return False
     
+    # MCP Server configuration validation
+    mcp_config = config.mcp_server_config
+    if mcp_config:
+        if mcp_config.mcp_server_transport and mcp_config.mcp_server_transport.lower() not in TransportType:
+            logger.error(
+                "Invalid mcp transport",
+                error="PROMETHEUS_MCP_SERVER_TRANSPORT environment variable is invalid",
+                suggestion="Please define one of these acceptable transports (http/sse/stdio)",
+                example="http"
+            )
+            return False
+
+        if mcp_config.mcp_bind_port and not isinstance(int(mcp_config.mcp_bind_port), int):
+            logger.error(
+                "Invalid mcp port",
+                error="PROMETHEUS_MCP_BIND_PORT environment variable is invalid",
+                suggestion="Please define an integer",
+                example="8080"
+            )
+        return False
+    
     # Determine authentication method
     auth_method = "none"
     if config.username and config.password:
