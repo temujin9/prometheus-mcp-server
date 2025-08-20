@@ -68,7 +68,7 @@ config = PrometheusConfig(
     mcp_server_config=MCPServerConfig(
         mcp_server_transport=os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT", ""),
         mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST", ""),
-        mcp_bind_port=os.environ.get("PROMETHEUS_MCP_BIND_PORT", "")
+        mcp_bind_port=int(os.environ.get("PROMETHEUS_MCP_BIND_PORT", ""))
     )
 )
 
