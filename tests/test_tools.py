@@ -1,8 +1,10 @@
 """Tests for the MCP tools functionality."""
 
 import pytest
+import json
 from unittest.mock import patch, MagicMock
-from prometheus_mcp_server.server import execute_query, execute_range_query, list_metrics, get_metric_metadata, get_targets
+from fastmcp import Client
+from prometheus_mcp_server.server import mcp, execute_query, execute_range_query, list_metrics, get_metric_metadata, get_targets
 
 @pytest.fixture
 def mock_make_request():
@@ -19,13 +21,14 @@ async def test_execute_query(mock_make_request):
         "result": [{"metric": {"__name__": "up"}, "value": [1617898448.214, "1"]}]
     }
 
-    # Execute
-    result = await execute_query("up")
+    async with Client(mcp) as client:
+        # Execute
+        result = await client.call_tool("execute_query", {"query":"up"})
 
-    # Verify
-    mock_make_request.assert_called_once_with("query", params={"query": "up"})
-    assert result["resultType"] == "vector"
-    assert len(result["result"]) == 1
+        # Verify
+        mock_make_request.assert_called_once_with("query", params={"query": "up"})
+        assert result.data["resultType"] == "vector"
+        assert len(result.data["result"]) == 1
 
 @pytest.mark.asyncio
 async def test_execute_query_with_time(mock_make_request):
@@ -36,12 +39,13 @@ async def test_execute_query_with_time(mock_make_request):
         "result": [{"metric": {"__name__": "up"}, "value": [1617898448.214, "1"]}]
     }
 
-    # Execute
-    result = await execute_query("up", time="2023-01-01T00:00:00Z")
-
-    # Verify
-    mock_make_request.assert_called_once_with("query", params={"query": "up", "time": "2023-01-01T00:00:00Z"})
-    assert result["resultType"] == "vector"
+    async with Client(mcp) as client:
+        # Execute
+        result = await client.call_tool("execute_query", {"query":"up", "time":"2023-01-01T00:00:00Z"})
+        
+        # Verify
+        mock_make_request.assert_called_once_with("query", params={"query": "up", "time": "2023-01-01T00:00:00Z"})
+        assert result.data["resultType"] == "vector"
 
 @pytest.mark.asyncio
 async def test_execute_range_query(mock_make_request):
@@ -58,24 +62,26 @@ async def test_execute_range_query(mock_make_request):
         }]
     }
 
-    # Execute
-    result = await execute_range_query(
-        "up", 
-        start="2023-01-01T00:00:00Z", 
-        end="2023-01-01T01:00:00Z", 
-        step="15s"
-    )
+    async with Client(mcp) as client:
+        # Execute
+        result = await client.call_tool(
+            "execute_range_query",{
+            "query": "up", 
+            "start": "2023-01-01T00:00:00Z", 
+            "end": "2023-01-01T01:00:00Z", 
+            "step": "15s"
+        })
 
-    # Verify
-    mock_make_request.assert_called_once_with("query_range", params={
-        "query": "up",
-        "start": "2023-01-01T00:00:00Z",
-        "end": "2023-01-01T01:00:00Z",
-        "step": "15s"
-    })
-    assert result["resultType"] == "matrix"
-    assert len(result["result"]) == 1
-    assert len(result["result"][0]["values"]) == 2
+        # Verify
+        mock_make_request.assert_called_once_with("query_range", params={
+            "query": "up",
+            "start": "2023-01-01T00:00:00Z",
+            "end": "2023-01-01T01:00:00Z",
+            "step": "15s"
+        })
+        assert result.data["resultType"] == "matrix"
+        assert len(result.data["result"]) == 1
+        assert len(result.data["result"][0]["values"]) == 2
 
 @pytest.mark.asyncio
 async def test_list_metrics(mock_make_request):
@@ -83,12 +89,13 @@ async def test_list_metrics(mock_make_request):
     # Setup
     mock_make_request.return_value = ["up", "go_goroutines", "http_requests_total"]
 
-    # Execute
-    result = await list_metrics()
+    async with Client(mcp) as client:
+        # Execute
+        result = await client.call_tool("list_metrics", {})
 
-    # Verify
-    mock_make_request.assert_called_once_with("label/__name__/values")
-    assert result == ["up", "go_goroutines", "http_requests_total"]
+        # Verify
+        mock_make_request.assert_called_once_with("label/__name__/values")
+        assert result.data == ["up", "go_goroutines", "http_requests_total"]
 
 @pytest.mark.asyncio
 async def test_get_metric_metadata(mock_make_request):
@@ -98,14 +105,18 @@ async def test_get_metric_metadata(mock_make_request):
         {"metric": "up", "type": "gauge", "help": "Up indicates if the scrape was successful", "unit": ""}
     ]}
 
-    # Execute
-    result = await get_metric_metadata("up")
+    async with Client(mcp) as client:
+        # Execute
+        result = await client.call_tool("get_metric_metadata", {"metric":"up"})
 
-    # Verify
-    mock_make_request.assert_called_once_with("metadata", params={"metric": "up"})
-    assert len(result) == 1
-    assert result[0]["metric"] == "up"
-    assert result[0]["type"] == "gauge"
+        payload = result.content[0].text
+        json_data = json.loads(payload)
+
+        # Verify
+        mock_make_request.assert_called_once_with("metadata", params={"metric": "up"})
+        assert len(json_data) == 1
+        assert json_data[0]["metric"] == "up"
+        assert json_data[0]["type"] == "gauge"
 
 @pytest.mark.asyncio
 async def test_get_targets(mock_make_request):
@@ -118,11 +129,15 @@ async def test_get_targets(mock_make_request):
         "droppedTargets": []
     }
 
-    # Execute
-    result = await get_targets()
+    async with Client(mcp) as client:
+        # Execute
+        result = await client.call_tool("get_targets",{})
 
-    # Verify
-    mock_make_request.assert_called_once_with("targets")
-    assert len(result["activeTargets"]) == 1
-    assert result["activeTargets"][0]["health"] == "up"
-    assert len(result["droppedTargets"]) == 0
+        payload = result.content[0].text
+        json_data = json.loads(payload)
+
+        # Verify
+        mock_make_request.assert_called_once_with("targets")
+        assert len(json_data["activeTargets"]) == 1
+        assert json_data["activeTargets"][0]["health"] == "up"
+        assert len(json_data["droppedTargets"]) == 0

@@ -6,10 +6,11 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 import time
 from datetime import datetime, timedelta
+from enum import Enum
 
 import dotenv
 import requests
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from prometheus_mcp_server.logging_config import get_logger
 
 dotenv.load_dotenv()
@@ -17,6 +18,34 @@ mcp = FastMCP("Prometheus MCP")
 
 # Get logger instance
 logger = get_logger()
+
+class TransportType(str, Enum):
+    """Supported MCP server transport types."""
+
+    STDIO = "stdio"
+    HTTP = "http"
+    SSE = "sse"
+
+    @classmethod
+    def values(cls) -> list[str]:
+        """Get all valid transport values."""
+        return [transport.value for transport in cls]
+
+@dataclass
+class MCPServerConfig:
+    """Global Configuration for MCP."""
+    mcp_server_transport: TransportType = None
+    mcp_bind_host: str = None
+    mcp_bind_port: int = None
+
+    def __post_init__(self):
+        """Validate mcp configuration."""
+        if not self.mcp_server_transport:
+            raise ValueError("MCP SERVER TRANSPORT is required")
+        if not self.mcp_bind_host:
+            raise ValueError(f"MCP BIND HOST is required")
+        if not self.mcp_bind_port:
+            raise ValueError(f"MCP BIND PORT is required")
 
 @dataclass
 class PrometheusConfig:
@@ -27,6 +56,8 @@ class PrometheusConfig:
     token: Optional[str] = None
     # Optional Org ID for multi-tenant setups
     org_id: Optional[str] = None
+    # Optional Custom MCP Server Configuration
+    mcp_server_config: Optional[MCPServerConfig] = None
 
 config = PrometheusConfig(
     url=os.environ.get("PROMETHEUS_URL", ""),
@@ -34,6 +65,11 @@ config = PrometheusConfig(
     password=os.environ.get("PROMETHEUS_PASSWORD", ""),
     token=os.environ.get("PROMETHEUS_TOKEN", ""),
     org_id=os.environ.get("ORG_ID", ""),
+    mcp_server_config=MCPServerConfig(
+        mcp_server_transport=os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT", "stdio").lower(),
+        mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST", "127.0.0.1"),
+        mcp_bind_port=int(os.environ.get("PROMETHEUS_MCP_BIND_PORT", "8080"))
+    )
 )
 
 def get_prometheus_auth():
