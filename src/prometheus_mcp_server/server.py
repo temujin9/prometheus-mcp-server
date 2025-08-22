@@ -10,7 +10,7 @@ from enum import Enum
 
 import dotenv
 import requests
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from prometheus_mcp_server.logging_config import get_logger
 
 dotenv.load_dotenv()
@@ -31,11 +31,12 @@ class TransportType(str, Enum):
         """Get all valid transport values."""
         return [transport.value for transport in cls]
 
+@dataclass
 class MCPServerConfig:
     """Global Configuration for MCP."""
-    mcp_server_transport: TransportType = TransportType.STDIO
-    mcp_bind_host: str = "127.0.0.1"
-    mcp_bind_port: int = 8080
+    mcp_server_transport: TransportType = None
+    mcp_bind_host: str = None
+    mcp_bind_port: int = None
 
     def __post_init__(self):
         """Validate mcp configuration."""
@@ -55,7 +56,8 @@ class PrometheusConfig:
     token: Optional[str] = None
     # Optional Org ID for multi-tenant setups
     org_id: Optional[str] = None
-    mcp_server_config: MCPServerConfig
+    # Optional Custom MCP Server Configuration
+    mcp_server_config: Optional[MCPServerConfig] = None
 
 config = PrometheusConfig(
     url=os.environ.get("PROMETHEUS_URL", ""),
@@ -64,9 +66,9 @@ config = PrometheusConfig(
     token=os.environ.get("PROMETHEUS_TOKEN", ""),
     org_id=os.environ.get("ORG_ID", ""),
     mcp_server_config=MCPServerConfig(
-        mcp_server_transport=(os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT", "")).lower(),
-        mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST", ""),
-        mcp_bind_port=int(os.environ.get("PROMETHEUS_MCP_BIND_PORT", ""))
+        mcp_server_transport=os.environ.get("PROMETHEUS_MCP_SERVER_TRANSPORT", "stdio").lower(),
+        mcp_bind_host=os.environ.get("PROMETHEUS_MCP_BIND_HOST", "127.0.0.1"),
+        mcp_bind_port=int(os.environ.get("PROMETHEUS_MCP_BIND_PORT", "8080"))
     )
 )
 
