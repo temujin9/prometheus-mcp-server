@@ -37,6 +37,14 @@ If multiple authentication methods are configured, the server will prioritize th
 2. Basic authentication (if both `PROMETHEUS_USERNAME` and `PROMETHEUS_PASSWORD` are set)
 3. No authentication (if no credentials are provided)
 
+#### MCP Server Configuration
+
+| Variable | Description | Example |
+|----------|-------------|--------|
+| `PROMETHEUS_MCP_SERVER_TRANSPORT` | Choose between these transports: `http`, `stdio`, `sse`. If undefined,  `stdio` is set as the default transport. | `http` |
+| `PROMETHEUS_MCP_BIND_HOST` | Define the host for your MCP server, if undefined, `127.0.0.1` is set by default. | `localhost` |
+| `PROMETHEUS_MCP_BIND_PORT` | Define the port where your MCP server is exposed, if undefined, `8080` is set by default. | `8080` |
+
 ## MCP Client Configuration
 
 ### Claude Desktop Configuration
